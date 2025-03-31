@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termin vereinbaren</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #801131;
+        }
+        p {
+            font-size: 14px;
+            color: #666;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: left;
+        }
+        input {
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            background-color: #DFF5F7;
+        }
+        .error {
+            color: red;
+            font-size: 12px;
+            text-align: left;
+            display: none;
+        }
+        button {
+            margin-top: 15px;
+            background-color: #801131;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #5e0d23;
+        }
+        .loading {
+            display: none;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #801131;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Buche dein kostenloses Telefongespräch</h1>
+        <p>Wähle einfach einen passenden Termin und wir besprechen dein Anliegen.</p>
+        
+        <form id="appointmentForm">
+            <label for="name">Dein Name</label>
+            <input type="text" id="name" name="name" placeholder="Max Mustermann" required>
+            <span class="error" id="nameError">Bitte gib deinen Namen ein.</span>
+            
+            <label for="email">E-Mail-Adresse</label>
+            <input type="email" id="email" name="email" placeholder="deinemail@mail.com" required>
+            <span class="error" id="emailError">Bitte gib eine gültige E-Mail-Adresse ein.</span>
+            
+            <label for="phone">Telefonnummer</label>
+            <input type="tel" id="phone" name="phone" placeholder="+49 123 4567890" required>
+            <span class="error" id="phoneError">Bitte gib eine gültige Telefonnummer ein.</span>
+            
+            <label for="date">Datum wählen</label>
+            <input type="date" id="date" name="date" required>
+            <span class="error" id="dateError">Bitte wähle ein Datum.</span>
+            
+            <label for="time_from">Erreichbar von</label>
+            <input type="time" id="time_from" name="time_from" required>
+            <span class="error" id="timeFromError">Bitte gib eine Zeit ein.</span>
+            
+            <label for="time_to">Erreichbar bis</label>
+            <input type="time" id="time_to" name="time_to" required>
+            <span class="error" id="timeToError">Bitte gib eine Zeit ein.</span>
+            
+            <button type="submit" id="submitButton">Termin sichern</button>
+            <div class="loading" id="loadingMessage">Bitte warten... Ihr Termin wird gebucht.</div>
+        </form>
+    </div>
+
+    <script>
+        emailjs.init("sGPF48bqPrF0bOOHc");
+
+        document.getElementById("appointmentForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let valid = true;
+            
+            function showError(id, condition) {
+                document.getElementById(id).style.display = condition ? "block" : "none";
+                if (condition) valid = false;
+            }
+            
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+            const phone = document.getElementById("phone").value;
+            const date = document.getElementById("date").value;
+            const timeFrom = document.getElementById("time_from").value;
+            const timeTo = document.getElementById("time_to").value;
+
+            showError("nameError", name.trim() === "");
+            showError("emailError", !email.includes("@") || !email.includes("."));
+            showError("phoneError", !phone.match(/^[+0-9\s-]{7,15}$/));
+            showError("dateError", date === "");
+            showError("timeFromError", timeFrom === "");
+            showError("timeToError", timeTo === "");
+            
+            if (valid) {
+                document.getElementById("submitButton").style.display = "none";
+                document.getElementById("loadingMessage").style.display = "block";
+                
+                emailjs.send("service_ggkm018", "template_q2jzooi", {
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    date: date,
+                    time_from: timeFrom,
+                    time_to: timeTo
+                }).then(function(response) {
+                    alert("Termin erfolgreich gebucht! Eine Bestätigung wurde per E-Mail gesendet.");
+                    location.reload();
+                }, function(error) {
+                    alert("Fehler beim Senden. Bitte versuchen Sie es erneut.");
+                    document.getElementById("submitButton").style.display = "block";
+                    document.getElementById("loadingMessage").style.display = "none";
+                });
+            }
+        });
+    </script>
+</body>
+</html>
